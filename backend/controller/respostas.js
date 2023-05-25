@@ -24,9 +24,12 @@ const ListarRespostas = async (req, res) => {
 
 const EnviarRespostas = async (req, res) => {
     const { codigo } = req.params;
-    const { respostas } = req.body;
+    const { usuario, respostas } = req.body;
     try {
 
+        if (validarUsuario(usuario || !usuario)) {
+            return res.status(400).json({ mensagem: "Este usuário não é valido!" })
+        }
         if (await validarQuestionario(codigo)) {
             return res.status(400).json({ mensagem: "Questionário não encontrado!" })
         }
@@ -102,6 +105,14 @@ const validarQuestionario = async (codigo) => {
 const validarResposta = async (codigo) => {
     const respostaExiste = await knex('respostas').where({ codigo });
     if (respostaExiste.length < 1) {
+        return true;
+    }
+    return false;
+}
+
+const validarUsuario = async (codigo) => {
+    const usuarioValido = await knex('usuarios').where({ codigo });
+    if (usuarioValido.length < 1) {
         return true;
     }
     return false;
