@@ -5,6 +5,8 @@ const validacaoSchema = require('./middlewares/validacaoSchema');
 const usuarioSchema = require('./schemas/usuarioSchema');
 const { CriarQuestionarios, ListarQuestionarios, AtualizarQuestionario, ExcluirQuestionario } = require('./controller/questionarios');
 const questionarioSchema = require('./schemas/questionarioSchema');
+const { ListarRespostas, EnviarRespostas, AtualizarResposta, ExcluirResposta } = require('./controller/respostas');
+const respostaSchema = require('./schemas/respostaSchema');
 
 rotas.post('/login', Logar);
 
@@ -19,5 +21,10 @@ rotas.post('/questionarios', validacaoSchema(questionarioSchema), CriarQuestiona
 rotas.put('/questionario/:codigo', validacaoSchema(questionarioSchema), AtualizarQuestionario);
 rotas.patch('/questionario/:codigo', AtualizarQuestionario);
 rotas.delete('/questionario/:codigo', ExcluirQuestionario);
+
+rotas.get('/questionario/:codigo/respostas', ListarRespostas);
+rotas.post('/questionario/:codigo/respostas', validacaoSchema(respostaSchema), EnviarRespostas);
+rotas.put('/questionario/:codigo/respostas/:codigoResposta', AtualizarResposta);
+rotas.delete('/questionario/:codigo/respostas/:codigoResposta', ExcluirResposta);
 
 module.exports = rotas;
