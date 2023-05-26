@@ -2,7 +2,7 @@ const knex = require("../connection");
 
 const ListarRespostas = async (req, res) => {
     const { codigo } = req.params;
-    const paginacao = req.body.paginacao || 1;
+    const paginacao = req.query.paginacao || 1;
     try {
 
         if (await validarQuestionario(codigo)) {
@@ -27,7 +27,7 @@ const EnviarRespostas = async (req, res) => {
     const { usuario, respostas } = req.body;
     try {
 
-        if (validarUsuario(usuario || !usuario)) {
+        if (await validarUsuario(usuario) || !usuario) {
             return res.status(400).json({ mensagem: "Este usuário não é valido!" })
         }
         if (await validarQuestionario(codigo)) {
@@ -40,8 +40,10 @@ const EnviarRespostas = async (req, res) => {
                 return res.status(400).json({ mensagem: `Código de pergunta ${resposta.perg_cod} não encontrado!` })
             }
         }
+        const data = new Date();
         for (const resposta of respostas) {
-            await knex('respostas').insert({ descricao: resposta.descricao, perg_cod: resposta.perg_cod })
+            const usuarioResposta = await knex('usuario_resposta').insert({ codigo_usuario: usuario, codigo_questionario: codigo, data }).returning('*');
+            await knex('respostas').insert({ descricao: resposta.descricao, perg_cod: resposta.perg_cod, usuario_resposta_codigo: usuarioResposta[0].codigo })
         }
 
         return res.status(200).json({ mensagem: "Respostas enviadas com sucesso!" })

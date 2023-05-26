@@ -1,12 +1,16 @@
+const { format } = require("date-fns");
 const knex = require("../connection");
 
 const ListarQuestionarios = async (req, res) => {
+    const paginacao = req.query.paginacao || 1;
     try {
-        const questionarios = await knex('questionarios');
-        const questionariosComPerguntas = [];
+        const questionariosComPerguntas = { questionarios: [], totalQuestionarios: 0 };
+        questionariosComPerguntas.totalQuestionarios = (await knex('questionarios')).length;
+        const questionarios = await knex('questionarios').limit(10).offset((paginacao - 1) * 10);
         for (const questionario of questionarios) {
+            questionario.data = format(new Date(questionario.data), 'dd/MM/yyyy')
             questionario.perguntas = await knex('perguntas').where({ codigo_questionario: questionario.codigo })
-            questionariosComPerguntas.push(questionario)
+            questionariosComPerguntas.questionarios.push(questionario)
         }
         return res.status(200).json(questionariosComPerguntas);
     } catch (error) {
