@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const ListarUsuarios = async (req, res) => {
 
     try {
-        const usuarios = await knex('usuarios');
+        const usuarios = await knex.select('codigo', 'nome', 'cpf').from('usuarios');
         return res.status(200).json(usuarios);
     } catch (error) {
         return res.status(400).json(error.message)

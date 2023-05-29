@@ -7,6 +7,8 @@ const { CriarQuestionarios, ListarQuestionarios, AtualizarQuestionario, ExcluirQ
 const questionarioSchema = require('./schemas/questionarioSchema');
 const { ListarRespostas, EnviarRespostas, AtualizarResposta, ExcluirResposta } = require('./controller/respostas');
 const respostaSchema = require('./schemas/respostaSchema');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
 
 
 rotas.get('/usuarios', ListarUsuarios);
@@ -25,5 +27,7 @@ rotas.get('/questionario/:codigo/respostas', ListarRespostas);
 rotas.post('/questionario/:codigo/respostas', validacaoSchema(respostaSchema), EnviarRespostas);
 rotas.put('/questionario/:codigo/respostas/:codigoResposta', AtualizarResposta);
 rotas.delete('/questionario/:codigo/respostas/:codigoResposta', ExcluirResposta);
+
+rotas.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 module.exports = rotas;
