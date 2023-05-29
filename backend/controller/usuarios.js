@@ -1,30 +1,6 @@
 const knex = require("../connection");
 const bcrypt = require('bcrypt');
 
-const Logar = async (req, res) => {
-    const { usuario } = req.body;
-    try {
-        const usuarioLogado = await knex('usuarios').where({ cpf: usuario.cpf });
-
-        if (usuarioLogado.length < 1) {
-            return res.status(400).json({ mensagem: "CPF e/ou senha inválido(s)." });
-        }
-
-        const senhaCorreta = await bcrypt.compare(usuario.senha, usuarioLogado[0].senha);
-
-        if (!senhaCorreta) {
-            return res.status(400).json({ mensagem: "CPF e/ou senha inválido(s)." });
-        }
-
-        return res.status(200).json({
-            mensagem: "Usuario logado com sucesso!",
-            codigo: usuarioLogado[0].codigo
-        })
-    } catch (error) {
-        return res.status(400).json(error.message)
-    }
-}
-
 const ListarUsuarios = async (req, res) => {
 
     try {
@@ -98,7 +74,6 @@ const verificarCpf = async (cpf, codigo) => {
 };
 
 module.exports = {
-    Logar,
     ListarUsuarios,
     CriarUsuario,
     AtualizarUsuario,

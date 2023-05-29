@@ -3,10 +3,10 @@ import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import { useRef, useState } from 'react';
 import { TextField, Typography } from '@mui/material';
-import AddBoxIcon from '@mui/icons-material/AddBox';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import { api } from '../config/api';
+import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 
 const style = {
@@ -32,23 +32,22 @@ const boxStyle = {
     alignItems: 'center'
 }
 
-export default function CreateSurveyFormModal() {
+export default function EditSurveyFormModal({ questionario }) {
     const [open, setOpen] = useState(false);
     const [perguntas, setPerguntas] = useState([{ descricao: '', cod_perg: '' }]);
-    const [questionario, setQuestionario] = useState({ nome: '', descricao: '' });
     const [openAlert, setOpenAlert] = useState(false);
     const alertMessageRef = useRef('');
     const severityRef = useRef('');
 
-    const handleOpen = () => setOpen(true);
+
+    const handleOpen = () => {
+        setOpen(true);
+        setPerguntas(questionario.perguntas);
+    };
     const handleClose = () => {
         setOpen(false);
-        setPerguntas([{ descricao: '', cod_perg: '' }])
     };
 
-    function HandleAddQuestion() {
-        setPerguntas([...perguntas, { descricao: '', cod_perg: '' }])
-    }
 
     async function HandleSubmit() {
         if (questionario.nome === '' || questionario.descricao === '') {
@@ -57,7 +56,13 @@ export default function CreateSurveyFormModal() {
             setOpenAlert(true)
             return;
         }
+        const questionarioEditado = {
+            nome: questionario.nome,
+            descricao: questionario.descricao,
+            perguntas: []
+        };
         for (const pergunta of perguntas) {
+            questionarioEditado.perguntas.push({ cod_perg: pergunta.cod_perg, descricao: pergunta.descricao })
             for (const array of Object.entries(pergunta)) {
                 if (array.includes('')) {
                     setOpenAlert(true)
@@ -69,8 +74,8 @@ export default function CreateSurveyFormModal() {
 
         }
         try {
-            const data = { ...questionario, perguntas }
-            await api.post('/questionarios', data)
+            const data = { ...questionarioEditado }
+            await api.put(`/questionario/${questionario.codigo}`, data)
             alertMessageRef.value = 'Questionário criado!';
             severityRef.value = 'success';
             setOpenAlert(true);
@@ -87,7 +92,7 @@ export default function CreateSurveyFormModal() {
 
     return (
         <div>
-            <Button onClick={handleOpen} variant='contained'>Criar Questionário</Button>
+            <EditIcon onClick={handleOpen} sx={{ cursor: 'pointer' }} />
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -102,12 +107,14 @@ export default function CreateSurveyFormModal() {
                                 required
                                 id="nome"
                                 label="Nome"
+                                defaultValue={questionario.nome}
                                 onChange={(event) => { questionario.nome = event.target.value; }}
                             />
                             <TextField
                                 required
                                 id="descricao"
                                 label="Descrição"
+                                defaultValue={questionario.descricao}
                                 sx={{ width: 400 }}
                                 onChange={(event) => { questionario.descricao = event.target.value; }}
                             />
@@ -117,7 +124,6 @@ export default function CreateSurveyFormModal() {
                             <Typography id="perguntasLabel" variant="h6" component="h2">
                                 Perguntas
                             </Typography>
-                            <AddBoxIcon sx={{ cursor: 'pointer' }} onClick={() => HandleAddQuestion()} />
                         </Box>
                         {perguntas.map(pergunta => (
                             <Box sx={boxStyle}>
@@ -125,6 +131,7 @@ export default function CreateSurveyFormModal() {
                                     required
                                     id="codigo"
                                     label="Código"
+                                    defaultValue={pergunta.cod_perg}
                                     sx={{ width: 100 }}
                                     onChange={(event) => { pergunta.cod_perg = event.target.value; }}
                                 />
@@ -132,6 +139,7 @@ export default function CreateSurveyFormModal() {
                                     required
                                     id="descricao"
                                     label="Descrição"
+                                    defaultValue={pergunta.descricao}
                                     sx={{ width: 520 }}
                                     onChange={(event) => { pergunta.descricao = event.target.value; }}
                                 />

@@ -1,4 +1,5 @@
 const knex = require("../connection");
+const bcrypt = require('bcrypt');
 
 const ListarRespostas = async (req, res) => {
     const { codigo } = req.params;
@@ -27,28 +28,28 @@ const EnviarRespostas = async (req, res) => {
     const { usuario, respostas } = req.body;
     try {
 
-        if (await validarUsuario(usuario) || !usuario) {
-            return res.status(400).json({ mensagem: "Este usuário não é valido!" })
+        if (await validarUsuario(usuario) || !(usuario.cpf && usuario.senha)) {
+            return res.status(400).json({ mensagem: "CPF e/ou senha inválido(s)." });
         }
         if (await validarQuestionario(codigo)) {
-            return res.status(400).json({ mensagem: "Questionário não encontrado!" })
+            return res.status(400).json({ mensagem: "Questionário não encontrado!" });
         }
 
         for (const resposta of respostas) {
             const perguntaExiste = await knex('perguntas').where({ cod_perg: resposta.perg_cod });
             if (perguntaExiste.length < 1) {
-                return res.status(400).json({ mensagem: `Código de pergunta ${resposta.perg_cod} não encontrado!` })
+                return res.status(400).json({ mensagem: `Código de pergunta ${resposta.perg_cod} não encontrado!` });
             }
         }
         const data = new Date();
         for (const resposta of respostas) {
-            const usuarioResposta = await knex('usuario_resposta').insert({ codigo_usuario: usuario, codigo_questionario: codigo, data }).returning('*');
+            const usuarioResposta = await knex('usuario_resposta').insert({ codigo_usuario: usuario.codigo, codigo_questionario: codigo, data }).returning('*');
             await knex('respostas').insert({ descricao: resposta.descricao, perg_cod: resposta.perg_cod, usuario_resposta_codigo: usuarioResposta[0].codigo })
         }
 
-        return res.status(200).json({ mensagem: "Respostas enviadas com sucesso!" })
+        return res.status(200).json({ mensagem: "Respostas enviadas com sucesso!" });
     } catch (error) {
-        return res.status(400).json(error.message)
+        return res.status(400).json(error.message);
     }
 }
 
@@ -112,12 +113,24 @@ const validarResposta = async (codigo) => {
     return false;
 }
 
-const validarUsuario = async (codigo) => {
-    const usuarioValido = await knex('usuarios').where({ codigo });
-    if (usuarioValido.length < 1) {
+const validarUsuario = async (usuario) => {
+    try {
+        const usuarioLogado = await knex('usuarios').where({ cpf: usuario.cpf });
+
+        if (usuarioLogado.length < 1) {
+            return true;
+        }
+
+        const senhaCorreta = await bcrypt.compare(usuario.senha, usuarioLogado[0].senha);
+        if (!senhaCorreta) {
+            return true;
+        }
+
+        usuario.codigo = usuarioLogado[0].codigo;
+        return false;
+    } catch (error) {
         return true;
     }
-    return false;
 }
 
 module.exports = {

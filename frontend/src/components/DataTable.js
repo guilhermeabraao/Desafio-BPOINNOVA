@@ -9,8 +9,8 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import { api } from '../config/api';
 import { useEffect, useState } from 'react';
-import EditIcon from '@mui/icons-material/Edit';
-import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import EditSurveyFormModal from './EditSurveyFormModal';
+import AnswerSurveyFormModal from './AnswerSurveyFormModal';
 
 const columns = [
     { id: 'codigo', label: 'Codigo', minWidth: 50 },
@@ -28,6 +28,7 @@ const columns = [
     },
     {
         id: 'botoes',
+        label: 'Editar / Responder',
         minWidth: 100,
     },
 ];
@@ -84,8 +85,8 @@ export default function DataTable() {
                                         } else {
                                             return (
                                                 <TableCell key={column.id} align={column.align} sx={{ display: 'flex', gap: 4, cursor: 'pointer' }}>
-                                                    <EditIcon sx={{ cursor: 'pointer' }} />
-                                                    <QuestionAnswerIcon />
+                                                    <EditSurveyFormModal questionario={row} />
+                                                    <AnswerSurveyFormModal questionario={row} />
                                                 </TableCell>)
                                         }
                                     })}
