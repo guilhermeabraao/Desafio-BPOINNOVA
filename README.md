@@ -31,4 +31,4 @@ No terminal da pasta frontend, execute o seguinte comando para subir o backend
 
 ## Documentação Backend
 
-Para conferir as rotas e suas especificações, basta acessar o caminho */docs* do URL da sua API que será exibida todas as informações pertinentes as rotas do backend.
+Para conferir as rotas e suas especificações, basta acessar o caminho */api* do URL da sua API que será exibida todas as informações pertinentes as rotas do backend.
